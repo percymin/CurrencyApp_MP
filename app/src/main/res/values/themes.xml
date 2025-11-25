@@ -1,0 +1,12 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <style name="Base.Theme.CurrencyTest" parent="Theme.Material3.Light.NoActionBar">
+        <item name="colorPrimary">@color/primaryBlue</item>
+        <item name="colorPrimaryContainer">@color/primaryBlue</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="android:statusBarColor">@color/primaryBlue</item>
+        <item name="android:navigationBarColor">@color/white</item>
+        <item name="android:windowBackground">@color/backgroundGray</item>
+    </style>
+
+    <style name="Theme.CurrencyTest" parent="Base.Theme.CurrencyTest" />
+</resources>

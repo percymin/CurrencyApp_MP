@@ -1,0 +1,22 @@
+<resources>
+    <style name="TextTitle">
+        <item name="android:textSize">20sp</item>
+        <item name="android:textColor">@color/textPrimary</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="TextSubtitle">
+        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">@color/textSecondary</item>
+    </style>
+
+    <style name="TextBody">
+        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">@color/textPrimary</item>
+    </style>
+
+    <style name="TextMuted">
+        <item name="android:textSize">12sp</item>
+        <item name="android:textColor">@color/textMuted</item>
+    </style>
+</resources>

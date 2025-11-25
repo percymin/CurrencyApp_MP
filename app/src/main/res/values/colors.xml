@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="backgroundGray">#F9FAFB</color>
+    <color name="cardBackground">#FFFFFF</color>
+    <color name="primaryBlue">#2563EB</color>
+    <color name="textPrimary">#111827</color>
+    <color name="textSecondary">#6B7280</color>
+    <color name="textMuted">#9CA3AF</color>
+    <color name="riseRed">#EF4444</color>
+    <color name="fallBlue">#3B82F6</color>
+    <color name="riseGreen">#10B981</color>
+    <color name="dividerLight">#E5E7EB</color>
+    <color name="nav_inactive">#9CA3AF</color>
+</resources>
