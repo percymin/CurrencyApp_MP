@@ -7,17 +7,16 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.cookandroid.currencytest.databinding.FragmentAiBinding
-import com.cookandroid.currencytest.model.Message
 import com.cookandroid.currencytest.ui.MessageAdapter
 
 class AiFragment : Fragment() {
 
     private var binding: FragmentAiBinding? = null
-    private val messages = mutableListOf(
-        Message("ai", "안녕하세요! 환율에 대해 궁금한 점이 있으시면 무엇이든 물어보세요. \uD83D\uDCCA")
-    )
+    // Activity와 데이터를 공유하는 ViewModel
+    private val viewModel: MainViewModel by activityViewModels()
     private lateinit var adapter: MessageAdapter
 
     override fun onCreateView(
@@ -27,11 +26,37 @@ class AiFragment : Fragment() {
     ): View {
         val b = FragmentAiBinding.inflate(inflater, container, false)
         binding = b
-        adapter = MessageAdapter(messages)
+
+        // 1. 어댑터 초기화 (ViewModel에 있는 대화 목록으로 시작)
+        adapter = MessageAdapter(viewModel.chatMessages.value ?: mutableListOf())
         b.messageRecycler.layoutManager = LinearLayoutManager(requireContext()).apply { stackFromEnd = true }
         b.messageRecycler.adapter = adapter
 
+        // 2. 대화 목록 관찰 (새 메시지 오면 갱신)
+        viewModel.chatMessages.observe(viewLifecycleOwner) { messages ->
+            // 리스트 전체를 갱신하는 것보다 효율적인 방법이 있지만, 간단히 구현
+            // 실제로는 어댑터 내부 리스트를 교체하거나 DiffUtil 사용 권장
+            adapter = MessageAdapter(messages)
+            b.messageRecycler.adapter = adapter
+            scrollToBottom()
+        }
+
+        // 3. 로딩 상태 관찰 (AI 생각 중일 때 버튼 비활성화 등)
+        viewModel.isAiLoading.observe(viewLifecycleOwner) { isLoading ->
+            b.btnSend.isEnabled = !isLoading
+            b.inputMessage.isEnabled = !isLoading
+            if (isLoading) {
+                b.inputMessage.hint = "AI가 분석 중입니다..."
+            } else {
+                b.inputMessage.hint = "환율에 대해 물어보세요..."
+                b.inputMessage.requestFocus()
+            }
+        }
+
+        // 전송 버튼
         b.btnSend.setOnClickListener { handleSend() }
+
+        // 엔터키 입력
         b.inputMessage.setOnKeyListener { _, keyCode, event ->
             if (keyCode == KeyEvent.KEYCODE_ENTER && event.action == KeyEvent.ACTION_UP) {
                 handleSend()
@@ -39,35 +64,29 @@ class AiFragment : Fragment() {
             } else false
         }
 
-        b.btnSuggestion1.setOnClickListener { b.inputMessage.setText("오늘 달러 환율은?") }
-        b.btnSuggestion2.setOnClickListener { b.inputMessage.setText("엔화 전망은?") }
-        b.btnSuggestion3.setOnClickListener { b.inputMessage.setText("환전하기 좋은 시점은?") }
+        // 추천 질문 버튼
+        b.btnSuggestion1.setOnClickListener { sendMessage("오늘 달러 환율은 어때?") }
+        b.btnSuggestion2.setOnClickListener { sendMessage("지금 엔화 사는 게 좋을까?") }
+        b.btnSuggestion3.setOnClickListener { sendMessage("환율 변동성이 큰 통화는 뭐야?") }
 
         return b.root
     }
 
     private fun handleSend() {
         val text = binding?.inputMessage?.text?.toString()?.trim().orEmpty()
-        if (text.isEmpty()) {
-            Toast.makeText(requireContext(), "질문을 입력하세요", Toast.LENGTH_SHORT).show()
-            return
-        }
-        addMessage(Message("user", text))
-        val aiReply =
-            "현재 환율 시장은 안정적인 추세를 보이고 있습니다. USD/KRW의 경우 최근 7일간 변동폭이 28원으로 낮은 편이며, 단기적으로는 1,320~1,350원 범위에서 움직일 것으로 예상됩니다. 추가로 궁금한 점이 있으시면 언제든 물어보세요! \uD83D\uDCA1"
-        addMessage(Message("ai", aiReply))
-        binding?.inputMessage?.setText("")
-        scrollToBottom()
+        if (text.isEmpty()) return
+        sendMessage(text)
     }
 
-    private fun addMessage(message: Message) {
-        adapter.addMessage(message)
+    private fun sendMessage(text: String) {
+        viewModel.askAi(text) // ViewModel에게 처리 위임
+        binding?.inputMessage?.setText("")
     }
 
     private fun scrollToBottom() {
         binding?.messageRecycler?.post {
             adapter.itemCount.takeIf { it > 0 }?.let {
-                binding?.messageRecycler?.scrollToPosition(it - 1)
+                binding?.messageRecycler?.smoothScrollToPosition(it - 1)
             }
         }
     }

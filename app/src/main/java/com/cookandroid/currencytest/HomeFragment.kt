@@ -1,13 +1,15 @@
 package com.cookandroid.currencytest
 
+
 import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.GridLayoutManager
-import com.cookandroid.currencytest.data.CurrencyCardRepository
 import com.cookandroid.currencytest.databinding.FragmentHomeBinding
 import com.cookandroid.currencytest.ui.HomeCurrencyAdapter
 
@@ -21,6 +23,9 @@ class HomeFragment : Fragment() {
     private var listener: OnCurrencySelectedListener? = null
     private lateinit var adapter: HomeCurrencyAdapter
 
+    // Activity와 데이터를 공유하는 ViewModel (API로 받은 데이터가 여기에 있음)
+    private val viewModel: MainViewModel by activityViewModels()
+
     override fun onAttach(context: Context) {
         super.onAttach(context)
         listener = context as? OnCurrencySelectedListener
@@ -33,24 +38,55 @@ class HomeFragment : Fragment() {
     ): View {
         val b = FragmentHomeBinding.inflate(inflater, container, false)
         binding = b
-        adapter = HomeCurrencyAdapter(CurrencyCardRepository.cards.toMutableList()) { code ->
+
+        // 1. 어댑터 초기화
+        adapter = HomeCurrencyAdapter(mutableListOf()) { code ->
             listener?.onCurrencySelected(code)
         }
+
+        // 2. 리사이클러뷰 설정 (2열 격자)
         b.currencyRecycler.layoutManager = GridLayoutManager(requireContext(), 2)
         b.currencyRecycler.adapter = adapter
-        b.btnSearch.setOnClickListener { applyFilter() }
+
+        // 3. 데이터 관찰 (API 데이터가 들어오거나 갱신되면 실행됨)
+        viewModel.currencyList.observe(viewLifecycleOwner) { _ ->
+            // 데이터가 갱신되어도 현재 검색어에 맞춰 필터링 유지
+            applyFilter()
+        }
+
+        // 4. [검색 기능 수정] 텍스트가 입력될 때마다 실시간으로 필터링
+        b.inputSearch.doOnTextChanged { _, _, _, _ ->
+            applyFilter()
+        }
+
+        // 검색 버튼 클릭 시에도 필터링 (엔터키 대용)
+        b.btnSearch.setOnClickListener {
+            applyFilter()
+        }
+
         return b.root
     }
 
+    // 검색 필터링 로직
     private fun applyFilter() {
-        val query = binding?.inputSearch?.text?.toString()?.trim().orEmpty()
+        // null 체크
+        val currentBinding = binding ?: return
+
+        val query = currentBinding.inputSearch.text.toString().trim()
+
+        // ViewModel에 저장된 전체 리스트 가져오기
+        val currentList = viewModel.currencyList.value ?: emptyList()
+
+        // 검색어가 없으면 전체 리스트, 있으면 이름이나 코드로 필터링
         val filtered = if (query.isEmpty()) {
-            CurrencyCardRepository.cards
+            currentList
         } else {
-            CurrencyCardRepository.cards.filter {
+            currentList.filter {
                 it.code.contains(query, true) || it.name.contains(query, true)
             }
         }
+
+        // 어댑터에 데이터 반영
         adapter.submitList(filtered)
     }
 

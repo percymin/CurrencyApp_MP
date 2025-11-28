@@ -1,62 +1,86 @@
 package com.cookandroid.currencytest.data
 
+import android.util.Log
 import com.cookandroid.currencytest.model.CurrencyCard
+import com.cookandroid.currencytest.network.RetrofitClient
+import kotlin.random.Random
 
 object CurrencyCardRepository {
-    val cards: List<CurrencyCard> = listOf(
-        CurrencyCard(
-            name = "미국",
-            code = "USD",
-            rate = 1477.30,
-            change = 5.30,
-            changePercent = 0.36,
-            data = listOf(1468.0, 1470.5, 1472.1, 1473.2, 1474.8, 1476.0, 1477.3),
-            isPositive = true
-        ),
-        CurrencyCard(
-            name = "일본",
-            code = "JPY 100",
-            rate = 942.07,
-            change = 0.86,
-            changePercent = 0.09,
-            data = listOf(940.1, 940.4, 940.9, 941.2, 941.5, 941.8, 942.07),
-            isPositive = true
-        ),
-        CurrencyCard(
-            name = "유럽연합",
-            code = "EUR",
-            rate = 1705.54,
-            change = 10.16,
-            changePercent = 0.60,
-            data = listOf(1694.0, 1696.2, 1699.0, 1700.5, 1702.9, 1704.2, 1705.5),
-            isPositive = true
-        ),
-        CurrencyCard(
-            name = "중국",
-            code = "CNY",
-            rate = 207.94,
-            change = 0.75,
-            changePercent = 0.36,
-            data = listOf(206.8, 207.0, 207.1, 207.3, 207.5, 207.7, 207.94),
-            isPositive = true
-        ),
-        CurrencyCard(
-            name = "영국",
-            code = "GBP",
-            rate = 1936.81,
-            change = 7.75,
-            changePercent = 0.40,
-            data = listOf(1927.0, 1928.5, 1929.7, 1931.2, 1933.8, 1935.2, 1936.8),
-            isPositive = true
-        ),
-        CurrencyCard(
-            name = "호주",
-            code = "AUD",
-            rate = 952.93,
-            change = 2.39,
-            changePercent = 0.25,
-            data = listOf(949.0, 949.8, 950.5, 951.1, 951.8, 952.3, 952.93),
-            isPositive = true
-        )
-    )
+    // ★ 여기에 아까 발급받은 API 키를 꼭 넣어주세요!
+    private const val API_KEY = "df9a28603b069b10c019b2e8"
+
+    suspend fun fetchRealRates(): List<CurrencyCard> {
+        return try {
+            val response = RetrofitClient.api.getRates(API_KEY, "USD")
+
+            if (response.isSuccessful && response.body() != null) {
+                val rates = response.body()!!.rates
+
+                // 1. 기준이 되는 원화(KRW) 환율 가져오기 (예: 1350.0)
+                val usdToKrw = rates["KRW"] ?: 1350.0
+
+                // 원하는 통화 목록
+                val targetCodes = listOf("USD", "JPY", "EUR", "CNY", "GBP", "AUD")
+                val countryNames = listOf("미국", "일본", "유럽연합", "중국", "영국", "호주")
+
+                val list = mutableListOf<CurrencyCard>()
+
+                targetCodes.forEachIndexed { index, code ->
+                    // 2. 해당 통화의 달러 대비 환율 (예: JPY = 150.0)
+                    val usdToTarget = rates[code] ?: 1.0
+
+                    // 3. 원화 기준 환율 계산: (USD->KRW) ÷ (USD->Target)
+                    // 예: 1350 / 150 = 9.0 (1엔당 9원)
+                    var krewBaseRate = usdToKrw / usdToTarget
+
+                    var displayCode = code
+
+                    // ★ 엔화는 '100엔' 단위로 보여주는 것이 관례
+                    if (code == "JPY") {
+                        krewBaseRate *= 100
+                        displayCode = "JPY 100"
+                    }
+
+                    // 그래프용 가짜 과거 데이터 생성 (현재 환율 기준)
+                    val fakeHistory = generateFakeHistory(krewBaseRate)
+                    val yesterdayRate = fakeHistory[fakeHistory.size - 2]
+                    val change = krewBaseRate - yesterdayRate
+                    val changePercent = (change / yesterdayRate) * 100
+
+                    list.add(
+                        CurrencyCard(
+                            name = countryNames[index],
+                            code = displayCode,
+                            rate = krewBaseRate,
+                            change = change,
+                            changePercent = changePercent,
+                            data = fakeHistory,
+                            isPositive = change >= 0
+                        )
+                    )
+                }
+                list
+            } else {
+                emptyList()
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            emptyList()
+        }
+    }
+
+    private fun generateFakeHistory(currentRate: Double): List<Double> {
+        val history = mutableListOf<Double>()
+        var tempRate = currentRate
+        repeat(7) {
+            history.add(tempRate)
+            // 0.3% 범위 내 랜덤 변동
+            val randomPercent = Random.nextDouble(-0.003, 0.003)
+            tempRate = tempRate * (1.0 - randomPercent)
+        }
+        return history.reversed()
+    }
+
+    // 더 이상 안 쓰지만 호환성을 위해 남겨둠
+    val cards = emptyList<CurrencyCard>()
 }
