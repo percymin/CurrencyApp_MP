@@ -1,5 +1,5 @@
 package com.cookandroid.currencytest.data
-
+import com.cookandroid.currencytest.BuildConfig
 import android.util.Log
 import com.cookandroid.currencytest.model.CurrencyCard
 import com.cookandroid.currencytest.network.RetrofitClient
@@ -7,8 +7,7 @@ import kotlin.random.Random
 
 object CurrencyCardRepository {
     // ★ 여기에 아까 발급받은 API 키를 꼭 넣어주세요!
-    private const val API_KEY = "df9a28603b069b10c019b2e8"
-
+    private val API_KEY = BuildConfig.EXCHANGE_API_KEY
     suspend fun fetchRealRates(): List<CurrencyCard> {
         return try {
             val response = RetrofitClient.api.getRates(API_KEY, "USD")
