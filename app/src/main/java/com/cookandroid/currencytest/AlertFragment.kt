@@ -18,9 +18,11 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.cookandroid.currencytest.data.AlertStorage
 import com.cookandroid.currencytest.databinding.FragmentAlertBinding
 import com.cookandroid.currencytest.model.Alert
 import com.cookandroid.currencytest.model.CurrencyCard
+import com.cookandroid.currencytest.util.RateUtils
 import com.cookandroid.currencytest.ui.AlertAdapter
 import java.util.Date
 import java.util.UUID
@@ -28,10 +30,14 @@ import java.util.UUID
 class AlertFragment : Fragment() {
 
     private var binding: FragmentAlertBinding? = null
-    private val alerts: MutableList<Alert> = mutableListOf(
-        Alert(id = UUID.randomUUID().toString(), baseCurrency = "USD", targetCurrency = "KRW", targetRate = 1320.0, condition = "below", createdAt = Date(124, 10, 20)),
-        Alert(id = UUID.randomUUID().toString(), baseCurrency = "EUR", targetCurrency = "KRW", targetRate = 1700.0, condition = "above", createdAt = Date(124, 10, 22))
-    )
+    private val alerts: MutableList<Alert> by lazy {
+        AlertStorage.load(requireContext()).ifEmpty {
+            mutableListOf(
+                Alert(id = UUID.randomUUID().toString(), baseCurrency = "USD", targetCurrency = "KRW", targetRate = 1320.0, condition = "below", createdAt = Date()),
+                Alert(id = UUID.randomUUID().toString(), baseCurrency = "EUR", targetCurrency = "KRW", targetRate = 1700.0, condition = "above", createdAt = Date())
+            )
+        }
+    }
     private lateinit var adapter: AlertAdapter
     private val baseOptions = listOf("USD", "JPY", "EUR", "GBP")
     private val targetOptions = listOf("KRW", "USD", "JPY", "EUR")
@@ -48,6 +54,7 @@ class AlertFragment : Fragment() {
         createNotificationChannel()
         adapter = AlertAdapter(alerts) { alert ->
             adapter.remove(alert)
+            AlertStorage.save(requireContext(), alerts)
             toggleEmpty()
             Toast.makeText(requireContext(), "알림이 삭제되었습니다.", Toast.LENGTH_SHORT).show()
         }
@@ -93,6 +100,7 @@ class AlertFragment : Fragment() {
             createdAt = Date()
         )
         adapter.add(alert)
+        AlertStorage.save(requireContext(), alerts)
         binding?.inputTargetRate?.setText("")
         toggleEmpty()
         val conditionText = if (condition == "below") "이하" else "이상"
@@ -108,7 +116,7 @@ class AlertFragment : Fragment() {
     private fun updateCurrentRateDisplay() {
         val base = baseOptions[binding?.spinnerBase?.selectedItemPosition ?: 0]
         val target = targetOptions[binding?.spinnerTarget?.selectedItemPosition ?: 0]
-        val currentRate = computeRate(base, target)
+        val currentRate = RateUtils.computeRate(latestRates, base, target)
         val text = if (target == "KRW") {
             "현재 환율: 1 $base = ${String.format("%,.2f", currentRate)}원"
         } else {
@@ -119,16 +127,7 @@ class AlertFragment : Fragment() {
 
     private fun computeRate(base: String, target: String): Double {
         if (latestRates.isEmpty()) return 0.0
-        val baseCard = latestRates.find { it.code.startsWith(base) }
-        val targetCard = latestRates.find { it.code.startsWith(target) }
-        val baseToKrw = baseCard?.rate?.let { adjustPerUnit(baseCard.code, it) } ?: return 0.0
-        if (target == "KRW") return baseToKrw
-        val targetToKrw = targetCard?.rate?.let { adjustPerUnit(targetCard.code, it) } ?: return 0.0
-        return baseToKrw / targetToKrw
-    }
-
-    private fun adjustPerUnit(code: String, rate: Double): Double {
-        return if (code.contains("100")) rate / 100.0 else rate
+        return RateUtils.computeRate(latestRates, base, target)
     }
 
     private fun maybeNotify(alert: Alert) {

@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import com.cookandroid.currencytest.databinding.ActivityMainBinding
+import com.cookandroid.currencytest.work.AlertWorkScheduler
 
 class MainActivity : AppCompatActivity(), HomeFragment.OnCurrencySelectedListener {
 
@@ -20,6 +21,7 @@ class MainActivity : AppCompatActivity(), HomeFragment.OnCurrencySelectedListene
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        AlertWorkScheduler.schedule(applicationContext)
 
         binding.bottomNav.setOnItemSelectedListener { item ->
             when (item.itemId) {

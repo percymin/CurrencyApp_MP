@@ -28,12 +28,12 @@ class GraphCurrencyAdapter(
             binding.rateValue.text = String.format("%,.2f", item.rate)
             val isRise = item.isPositive
             val icon = if (isRise) "▲" else "▼"
-            val color = binding.root.context.getColor(if (isRise) R.color.riseGreen else R.color.fallBlue)
+            val color = binding.root.context.getColor(if (isRise) R.color.riseRed else R.color.fallBlue)
             binding.changeIcon.text = icon
             binding.changeIcon.setTextColor(color)
             binding.changeText.text = "$icon ${String.format("%.2f", item.change)} ${String.format("%.2f", item.changePercent)}%"
             binding.changeText.setTextColor(color)
-            binding.sparkline.setData(item.data.map { it.toFloat() }, isRise, R.color.riseGreen, R.color.fallBlue)
+            binding.sparkline.setData(item.data.map { it.toFloat() }, isRise, R.color.riseRed, R.color.fallBlue)
             binding.root.isClickable = false
         }
     }

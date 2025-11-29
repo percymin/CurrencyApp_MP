@@ -59,4 +59,6 @@ class AlertAdapter(
         items.add(alert)
         notifyDataSetChanged()
     }
+
+    fun itemsSnapshot(): List<Alert> = items.toList()
 }
