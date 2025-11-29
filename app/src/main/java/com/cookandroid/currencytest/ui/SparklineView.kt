@@ -21,13 +21,13 @@ class SparklineView @JvmOverloads constructor(
     }
     private var points: List<Float> = emptyList()
     private var positiveTrend: Boolean = true
-    private var riseColorRes: Int = R.color.riseGreen
+    private var riseColorRes: Int = R.color.riseRed
     private var fallColorRes: Int = R.color.fallBlue
 
     fun setData(
         data: List<Float>,
         isPositiveTrend: Boolean,
-        riseColor: Int = R.color.riseGreen,
+        riseColor: Int = R.color.riseRed,
         fallColor: Int = R.color.fallBlue
     ) {
         points = data

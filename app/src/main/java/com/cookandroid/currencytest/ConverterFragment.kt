@@ -118,7 +118,7 @@ class ConverterFragment : Fragment() {
 
         // 3. 변동률 표시 (상승/하락 아이콘)
         val trendIcon = if (targetItem.isPositive) "📈" else "📉"
-        val trendColor = if(targetItem.isPositive) requireContext().getColor(R.color.riseGreen) else requireContext().getColor(R.color.fallBlue)
+        val trendColor = if(targetItem.isPositive) requireContext().getColor(R.color.riseRed) else requireContext().getColor(R.color.fallBlue)
 
         binding?.resultAiSub?.text = "$trendIcon 전일 대비 ${String.format("%.2f", targetItem.changePercent)}% 변동"
         binding?.resultAiSub?.setTextColor(trendColor)
@@ -146,7 +146,7 @@ class ConverterFragment : Fragment() {
 
             // 그래프 데이터 세팅
             val floatData = targetItem.data.map { it.toFloat() }
-            binding?.chartView?.setData(floatData, targetItem.isPositive, R.color.riseGreen, R.color.fallBlue)
+            binding?.chartView?.setData(floatData, targetItem.isPositive, R.color.riseRed, R.color.fallBlue)
 
             // 최저/최고/변동폭 텍스트 세팅
             val min = targetItem.data.minOrNull() ?: 0.0
