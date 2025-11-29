@@ -1,13 +1,12 @@
 package com.cookandroid.currencytest.data
 
-
+import com.cookandroid.currencytest.BuildConfig
 import com.cookandroid.currencytest.model.CurrencyCard
 import com.google.ai.client.generativeai.GenerativeModel
 
 object GeminiRepository {
     // ★ 여기에 Gemini API Key 입력
-    private const val API_KEY = "AIzaSyAtcZOzjXga-YspMsh6MXbX38d6RbPYrlw"
-
+    private val API_KEY = BuildConfig.GEMINI_API_KEY
     private val generativeModel = GenerativeModel(
         "gemini-2.5-flash",
         API_KEY
