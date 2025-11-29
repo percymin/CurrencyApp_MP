@@ -1,59 +1,73 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/backgroundGray"
-    android:orientation="vertical"
-    android:padding="16dp"
-    android:paddingBottom="88dp"
     tools:context=".HomeFragment">
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center_vertical"
-        android:orientation="horizontal">
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:padding="16dp"
+        android:paddingBottom="88dp">
 
-        <EditText
-            android:id="@+id/inputSearch"
-            android:layout_width="0dp"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <EditText
+                android:id="@+id/inputSearch"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@drawable/input_background"
+                android:hint="통화 검색 (예: USD, 유럽)"
+                android:padding="10dp"
+                android:textColor="@color/textPrimary"
+                android:textColorHint="@color/textMuted" />
+
+            <Button
+                android:id="@+id/btnSearch"
+                android:layout_width="72dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:backgroundTint="@color/primaryBlue"
+                android:text="검색"
+                android:textColor="@color/white"
+                android:textSize="14sp" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/homeTitle"
+            style="@style/TextTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="환율" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/currencyRecycler"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginTop="12dp"
             android:layout_weight="1"
-            android:background="@drawable/input_background"
-            android:hint="통화 검색 (예: USD, 유럽)"
-            android:padding="10dp"
-            android:textColor="@color/textPrimary"
-            android:textColorHint="@color/textMuted" />
-
-        <Button
-            android:id="@+id/btnSearch"
-            android:layout_width="72dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:backgroundTint="@color/primaryBlue"
-            android:text="검색"
-            android:textColor="@color/white"
-            android:textSize="14sp" />
+            android:clipToPadding="false"
+            android:paddingBottom="8dp"
+            app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
+            tools:listitem="@layout/item_currency_card" />
     </LinearLayout>
 
-    <TextView
-        android:id="@+id/homeTitle"
-        style="@style/TextTitle"
-        android:layout_width="match_parent"
+    <com.google.android.material.switchmaterial.SwitchMaterial
+        android:id="@+id/switchDarkMode"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="환율" />
+        android:layout_gravity="bottom|end"
+        android:layout_margin="16dp"
+        android:text="다크 모드"
+        android:textColor="@color/textPrimary" />
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/currencyRecycler"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_marginTop="12dp"
-        android:layout_weight="1"
-        android:clipToPadding="false"
-        android:paddingBottom="8dp"
-        app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
-        tools:listitem="@layout/item_currency_card" />
-
-</LinearLayout>
+</FrameLayout>

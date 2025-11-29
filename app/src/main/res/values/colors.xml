@@ -13,4 +13,6 @@
     <color name="riseGreen">#10B981</color>
     <color name="dividerLight">#E5E7EB</color>
     <color name="nav_inactive">#9CA3AF</color>
+    <color name="infoBackground">#E8F1FF</color>
+    <color name="chatAiBackground">#EEF2F7</color>
 </resources>
